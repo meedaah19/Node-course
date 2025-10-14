@@ -8,6 +8,7 @@ import { weather } from './util/weather.js';
 const app = express(); 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const port = process.env.PORT || 3000;
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, '../templates/views')); 
@@ -80,6 +81,6 @@ app.get(/.*/, (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000')
+app.listen(port, () => {
+    console.log('Server is running on port ' + port)
 })
