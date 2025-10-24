@@ -14,10 +14,11 @@ const Tasks = mongoose.model('Tasks', {
 })
 
 const task = new Tasks({
-    description: '  Learn Mongoose   ',
-    completed: true
+    description: '  Finish node js course   ',
+    completed: false
 
 })
+
 
 
 export default Tasks;
