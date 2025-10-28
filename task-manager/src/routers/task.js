@@ -1,4 +1,4 @@
-import Tasks from '../models/user.js';
+import Tasks from '../models/task.js';
 import express from 'express';
 
 const routerTask = new express.Router()
