@@ -1,5 +1,6 @@
 import User from '../models/user.js';
 import express from 'express';
+import auth from '../middlewares/auth.js'
 
 const router = new express.Router()
 
@@ -24,13 +25,8 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
-router.get('/users', async (req, res) => {
-    try {
-       const user =  await User.find({})
-        res.send(user)
-    } catch (error) {
-        res.status(500).send()
-    }
+router.get('/users/me', auth, async (req, res) => {
+    res.send(req.user)
 })
 
 router.get('/users/:id', async (req, res) => {
