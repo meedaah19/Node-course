@@ -10,15 +10,20 @@ const Tasks = mongoose.model('Tasks', {
     completed: {
         type: Boolean,
         default: false
+    }, 
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
     }
 })
 
 const task = new Tasks({
     description: '  Finish node js course   ',
-    completed: false
+    completed: false 
 
 })
 
 
 
-export default Tasks;
+export default Tasks; 

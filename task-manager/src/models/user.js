@@ -2,6 +2,7 @@ import validator from 'validator';
 import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Tasks from './task.js';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -49,6 +50,12 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
+userSchema.virtual('tasks', {
+    ref: 'Tasks',
+    localField: '_id',
+    foreignField: 'owner'
+});
+
 userSchema.pre('save', async function (next) {
   const user = this;
 
@@ -57,6 +64,12 @@ userSchema.pre('save', async function (next) {
   }
 
   next();
+});
+
+userSchema.pre('remove', async function (next) {
+    const user = this;
+    await Tasks.deleteMany({ owner: user._id });
+    next();
 });
 
 userSchema.methods.toJSON = function() {

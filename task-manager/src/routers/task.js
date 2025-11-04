@@ -1,43 +1,58 @@
 import Tasks from '../models/task.js';
 import express from 'express';
+import auth from '../middlewares/auth.js';
 
 const routerTask = new express.Router()
 
-routerTask.post('/tasks', async (req, res) => {
-    const user = new Tasks(req.body);
+routerTask.post('/tasks', auth, async (req, res) => {
+    const task = new Tasks({
+        ...req.body,
+        owner: req.user._id 
+    })
+
     try {
-        await user.save();
-        res.status(201).send(user);
+        await task.save();
+        res.status(200).send(task);
     } catch (e) {
-        res.status(400).send(e);
+        console.log(e)
+        res.status(500).send(e);
     }
 });
 
 
 
-routerTask.get('/tasks', async (req, res) => {
+routerTask.get('/tasks', auth, async (req, res) => {
+    // const task = await Tasks.findById('648b1f4f4f1a2565f4e2b6d3');
+    // await task.populate('owner');
+    // console.log(task.owner);
+
+    const user = req.user;
+
     try {
-       const task =  await Tasks.find({})
-        res.status(201).send(task)
+       const task =  await Tasks.find({ owner: user._id })
+       await user.populate('tasks');
+        res.status(200).send(task)
     } catch (error) {
         res.status(500).send(error)
     }
 })
 
-routerTask.get('/tasks/:id', async (req, res) => {
-    const _id = req.params.id   
+routerTask.get('/tasks/:id', auth, async (req, res) => {
+    const _id = req.params.id;
+
     try {
-       const task = await Tasks.findById(_id)
-       if(!task) {
+         const task = await Tasks.findOne({ _id, owner: req.user._id })
+
+        if(!task) {
         return res.status(404).send()
        }
-         res.status(201).send(task)
+         res.status(200).send(task)
     } catch (error) {
-        res.status(500).send
+        res.status(500).send 
     }
 });
 
-routerTask.patch('/tasks/:id', async (req, res) => {
+routerTask.patch('/tasks/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['decription', 'completed'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -46,14 +61,18 @@ routerTask.patch('/tasks/:id', async (req, res) => {
     }
 
     try {
-        const task = await Tasks.findById(req.params.id)
+        const task = await Tasks.findOne({_id: req.params.id, owner: req.user._id})
+
+        if(!task){
+            return res.status(404).send()
+        }
+
         updates.forEach((update) => {
             task[update] = req.body[update]
         })
 
         await task.save()
 
-       // const task = await Tasks.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
         if(!task) {
             return res.status(404).send()
         }
@@ -66,9 +85,9 @@ routerTask.patch('/tasks/:id', async (req, res) => {
 
 
 
-routerTask.delete('task/:id', async(req, res) => {
+routerTask.delete('/tasks/delete/:id', auth, async(req, res) => {
     try {
-        const task = await Tasks.findByIdAndDelete(req.params.id);
+        const task = await Tasks.findOneAndDelete({_id: req.params.id, owner: req.user._id});
 
         if(!task) {
             return res.status(404).send()
