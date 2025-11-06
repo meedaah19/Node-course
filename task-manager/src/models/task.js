@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-
-const Tasks = mongoose.model('Tasks', {
+const TaskSchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true,
@@ -16,7 +15,13 @@ const Tasks = mongoose.model('Tasks', {
         required: true,
         ref: 'User'
     }
+}, {
+  timestamps: true
 })
+
+
+const Tasks = mongoose.model('Tasks', TaskSchema)
+    
 
 const task = new Tasks({
     description: '  Finish node js course   ',

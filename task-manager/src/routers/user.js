@@ -1,11 +1,16 @@
 import User from '../models/user.js';
 import express from 'express';
 import auth from '../middlewares/auth.js'
+import multer from 'multer'
 
 const router = new express.Router()
 
+const upload = multer({
+    dest: 'avatars'
+})
+
 router.post('/users', async (req, res) => {
-    const user = new User(req.body);
+    const user = new User(req.body); 
     try {
         await user.save();
         const token = await user.generateAuthToken();
@@ -79,6 +84,10 @@ router.delete('/users/delete', auth, async(req, res) => {
     } catch (error) {
         res.status(500).send()
     }
+});
+
+router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
+    res.send()
 })
 
 export {router};
