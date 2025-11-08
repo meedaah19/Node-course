@@ -1,6 +1,7 @@
 import { MongoClient, ObjectId } from "mongodb";
 
-const connectionURL = 'mongodb://127.0.0.1:27017/'
+
+const connectionURL = process.env.MONGODB_URL;
 const client = new MongoClient(connectionURL);
 
 const databaseName = 'tast-manager'
