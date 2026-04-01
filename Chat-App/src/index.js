@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname} from 'node:path';
 import { Server } from "socket.io";
 import {Filter} from 'bad-words';
+import {generateMessage, generateLocationMessage} from './utils/messages.js'
 
 const app = express();
 const server = createServer(app);
@@ -19,10 +20,10 @@ io.on('connection', (socket) => {
     console.log('New WebSocket connection');
 
     //use for only the one person
-    socket.emit("message", "Welcome")
+    socket.emit("message", generateMessage('Welcome!'))
 
     //use for everyone except the new user
-    socket.broadcast.emit("message", 'A new user has join')
+    socket.broadcast.emit("message", generateMessage('A new user has join'))
 
     socket.on('message-form', (msg, callback) => {
         const filterWord = new Filter()
@@ -32,17 +33,17 @@ io.on('connection', (socket) => {
         }
 
         //use for everyone
-        io.emit('message', msg)
+        io.emit('message', generateMessage(msg))
         callback()
 
     })
 
     socket.on('disconnect', () => {
-        io.emit('message', "A user has left")
+        io.emit('message', generateMessage("A user has left"))
     })
 
     socket.on('SendLocation', (location, callback) => {
-        io.emit('message', `https://google.com/maps?q=${location.latitude},${location.longitude}` )
+        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${location.latitude},${location.longitude}`) )
         callback()
     })
 
