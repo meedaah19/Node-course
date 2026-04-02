@@ -19,11 +19,16 @@ app.use(express.static(path.join(__dirname, '../public')));
 io.on('connection', (socket) => {
     console.log('New WebSocket connection');
 
-    //use for only the one person
-    socket.emit("message", generateMessage('Welcome!'))
+    socket.on('join', ({username, room}) => {
+        socket.join(room)
 
-    //use for everyone except the new user
-    socket.broadcast.emit("message", generateMessage('A new user has join'))
+        //use for only the one person
+        socket.emit("message", generateMessage('Welcome!'))
+
+        //use for everyone except the new user
+        socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined!`))
+
+    })
 
     socket.on('message-form', (msg, callback) => {
         const filterWord = new Filter()
