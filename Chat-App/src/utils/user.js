@@ -25,26 +25,26 @@ const addUser = ({ id, username, room }) => {
     users.push(user)
     return { user }
 }
-// const removeUser = (id) => {
-//     const index = user.findIdex((user) => user.id ==id)
+const removeUser = (id) => {
+    const index = users.findIndex((user) => user.id === id)
 
-//     if(index)
-// }
+    if (index !== -1) {
+        return users.splice(index, 1)[0]
+    }
 
-addUser({
-    id: 22,
-    username: 'Hameedat',
-    room: 'South Philly'
-})
-console.log(users)
+}
 
-const res = addUser({
-    id: 12,
-    username: 'hameedat',
-    room: 'South Philly'
-})
+const getUser = (id) => {
+    return users.find((user) => {
+        return user.id === id
+    })
+}
 
-console.log(res)
+const getUserInRoom = (room) => {
+    return users.filter((user) => user.room === room)
+}
+
+export {addUser, removeUser, getUser, getUserInRoom}
 
 
 
