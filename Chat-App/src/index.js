@@ -6,6 +6,7 @@ import { dirname} from 'node:path';
 import { Server } from "socket.io";
 import {Filter} from 'bad-words';
 import {generateMessage, generateLocationMessage} from './utils/messages.js'
+import {addUser, getUser, getUserInRoom, removeUser} from './utils/user.js'
 
 const app = express();
 const server = createServer(app);
@@ -19,18 +20,27 @@ app.use(express.static(path.join(__dirname, '../public')));
 io.on('connection', (socket) => {
     console.log('New WebSocket connection');
 
-    socket.on('join', ({username, room}) => {
-        socket.join(room)
+    socket.on('join', (options, callback) => {
+        const {error, user} = addUser({id: socket.id, ...options})
+
+        if(error) {
+            return callback(error)
+        }
+
+        socket.join(user.room)
 
         //use for only the one person
-        socket.emit("message", generateMessage('Welcome!'))
+        socket.emit("message", generateMessage(`welcome Admin` ))
 
         //use for everyone except the new user
-        socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined!`))
+        socket.broadcast.to(user.room).emit("message", generateMessage(`Admin ${user.username} has joined!`))
+
+        callback()
 
     })
 
     socket.on('message-form', (msg, callback) => {
+        const user = getUser(socket.id)
         const filterWord = new Filter()
 
         if(filterWord.isProfane(msg)) {
@@ -38,22 +48,26 @@ io.on('connection', (socket) => {
         }
 
         //use for everyone
-        io.emit('message', generateMessage(msg))
+        io.to(user.room).emit('message', generateMessage(user.username, msg))
         callback()
 
-    })
-
-    socket.on('disconnect', () => {
-        io.emit('message', generateMessage("A user has left"))
     })
 
     socket.on('SendLocation', (location, callback) => {
-        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${location.latitude},${location.longitude}`) )
+        const user = getUser(socket.id)
+        io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, `https://google.com/maps?q=${location.latitude},${location.longitude}`) )
         callback()
     })
 
-});
+    socket.on('disconnect', () => {
+        const user = removeUser(socket.id)
 
+        if(user) {
+           io.to(user.room).emit('message', generateMessage(`Admin ${user.username} has left`))
+        }
+    })
+
+});
 
 server.listen(port, () => {
     console.log(`Server running on port ${port}`)
